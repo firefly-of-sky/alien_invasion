@@ -7,6 +7,7 @@ from pygame.sprite import Group
 
 from settings import Settings
 from game_stats import GameStats
+from button import Button
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
@@ -26,6 +27,9 @@ class AlienInvasion:
         # 创建一个用于存储游戏统计信息的实例
         self.stats = GameStats(self)
 
+        # 创建Play按钮
+        self.play_button = Button(self, "Play")
+
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
@@ -33,7 +37,7 @@ class AlienInvasion:
         self._create_fleet()
 
         # 游戏启动后处于活动状态
-        self.game_active = True
+        self.game_active = False
 
 
     def run_game(self):
@@ -48,7 +52,6 @@ class AlienInvasion:
             self._update_screen()
             self.clock.tick(60) 
 
-
     def _check_events(self):
         """侦听键盘和鼠标事件"""
         for event in pygame.event.get():
@@ -58,6 +61,28 @@ class AlienInvasion:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
+
+    def _check_play_button(self, mouse_pos):
+        """在玩家单击Play按钮时开始新游戏"""
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_clicked and not self.game_active:
+            # 重置游戏的统计信息
+            self.stats.reset_stats()
+            self.game_active = True
+
+            # 清空外星人列表和子弹列表
+            self.bullets.empty()
+            self.aliens.empty()
+
+            # 创建一个新的外形舰队，并将飞船放在屏幕底部的中央
+            self._create_fleet()
+            self.ship.center_ship()
+
+            # 隐藏光标
+            pygame.mouse.set_visible(False)
 
     def _check_keydown_events(self, event):
         """响应按下"""
@@ -72,11 +97,11 @@ class AlienInvasion:
 
     def _check_keyup_events(self, event):
         """响应释放"""
-        if event.key == pygame.K_d:
-            self.ship.moving_right = False
-        elif event.key == pygame.K_a:
+        if event.key == pygame.K_a:
             self.ship.moving_left = False
-    
+        elif event.key == pygame.K_d:
+            self.ship.moving_right = False
+
     def _fire_bullet(self):
         """创建一颗子弹，并将其加入编组bullets """
         if len(self.bullets) < self.settings.bullets_allowed:
@@ -91,6 +116,9 @@ class AlienInvasion:
         self.ship.blitme()
         self.aliens.draw(self.screen)
 
+        if not self.game_active:
+            self.play_button.draw_button()
+            
         pygame.display.flip()
     
     def _update_bullets(self):
@@ -104,7 +132,6 @@ class AlienInvasion:
                 self.bullets.remove(bullet)
         
         self._check_bullet_alien_collision()
-
 
     def _create_fleet(self):
         """创建一个外星人舰队"""
@@ -186,6 +213,7 @@ class AlienInvasion:
             sleep(0.5)
         else:
             self.game_active = False
+            pygame.mouse.set_visible(True)
     
     def _check_aliens_bottom(self):
         """检查是否有外星人到达了屏幕的下边缘"""
