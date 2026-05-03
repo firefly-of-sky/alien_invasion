@@ -1,6 +1,7 @@
 import sys
 from time import sleep
-
+from pathlib import Path
+import json
 
 import pygame
 from pygame.sprite import Group
@@ -58,6 +59,7 @@ class AlienInvasion:
         """侦听键盘和鼠标事件"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                self._write_down_high_score()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
@@ -80,6 +82,7 @@ class AlienInvasion:
         elif event.key == pygame.K_a:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
+            self._write_down_high_score()
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
@@ -250,6 +253,11 @@ class AlienInvasion:
 
         # 隐藏光标
         pygame.mouse.set_visible(False)
+
+    def _write_down_high_score(self):
+        path = Path('high_score.json')
+        contents = json.dumps(self.stats.high_score)
+        path.write_text(contents)
 
 if __name__ == '__main__':
     # 创建游戏实例并运行游戏
