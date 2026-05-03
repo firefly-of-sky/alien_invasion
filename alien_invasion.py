@@ -189,18 +189,24 @@ class AlienInvasion:
             for aliens in collisions.values():
                 self.stats.score += self.settings.alien_points * len(aliens)
             self.sb.prep_score()
+            self.sb.check_high_score()
 
         if not self.aliens:
-        # 删除现有的子弹并创建一个新的外星舰队
+            # 删除现有的子弹并创建一个新的外星舰队
             self.bullets.empty()
             self._create_fleet()
             self.settings.increase_speed()
 
+            # 提高等级
+            self.stats.level += 1
+            self.sb.prep_level()
+
     def _ship_hit(self):
         """响应飞船和外星人的碰撞"""
         if self.stats.ships_left > 1:
-            # 将ships_left 减1
+            # 将ships_left 减1并更新记分牌
             self.stats.ships_left -= 1
+            self.sb.prep_ships()
 
             # 清空外星人列表和子弹列表
             self.bullets.empty()
@@ -231,6 +237,8 @@ class AlienInvasion:
         self.stats.reset_stats()
         self.game_active = True
         self.sb.prep_score()
+        self.sb.prep_level()
+        self.sb.prep_ships()
 
         # 清空外星人列表和子弹列表
         self.bullets.empty()
