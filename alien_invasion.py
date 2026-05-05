@@ -13,6 +13,7 @@ from button import Button
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
+from sound import Bg_music, Shoot_sound
 class AlienInvasion:
     """管理游戏资源和行为的类"""
     def __init__(self):
@@ -30,6 +31,12 @@ class AlienInvasion:
         self.stats = GameStats(self)
         self.sb = Scoreboard(self)
 
+        # 创建背景音乐实例并播放
+        self.bg_music = Bg_music()
+
+        # 创建射击音效
+        self.shoot_sound = Shoot_sound()
+
         # 创建Play按钮
         self.play_button = Button(self, "Play")
 
@@ -45,6 +52,7 @@ class AlienInvasion:
 
     def run_game(self):
         """开始游戏的主循环"""
+
         while True:
             
             self._check_events()
@@ -81,6 +89,10 @@ class AlienInvasion:
             self.ship.moving_right = True
         elif event.key == pygame.K_a:
             self.ship.moving_left = True
+        elif event.key == pygame.K_w:
+            self.ship.moving_up = True
+        elif event.key == pygame.K_s:
+            self.ship.moving_down = True
         elif event.key == pygame.K_q:
             self._write_down_high_score()
             sys.exit()
@@ -95,12 +107,17 @@ class AlienInvasion:
             self.ship.moving_left = False
         elif event.key == pygame.K_d:
             self.ship.moving_right = False
-
+        elif event.key == pygame.K_w:
+            self.ship.moving_up = False
+        elif event.key == pygame.K_s:
+            self.ship.moving_down = False
+        
     def _fire_bullet(self):
         """创建一颗子弹，并将其加入编组bullets """
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
+            self.shoot_sound.sound.play(0)  # 播放射击音效
 
     def _update_screen(self):
         """更新屏幕上的图像，并切换到新屏幕"""
@@ -222,8 +239,7 @@ class AlienInvasion:
             # 暂停
             sleep(0.5)
         else:
-            self.game_active = False
-            pygame.mouse.set_visible(True)
+            self._pause_game()
     
     def _check_aliens_bottom(self):
         """检查是否有外星人到达了屏幕的下边缘"""
@@ -254,10 +270,18 @@ class AlienInvasion:
         # 隐藏光标
         pygame.mouse.set_visible(False)
 
+        # 放音乐
+        self.bg_music.sound.play(-1)  # 循环播放背景音乐
+
     def _write_down_high_score(self):
         path = Path('high_score.json')
         contents = json.dumps(self.stats.high_score)
         path.write_text(contents)
+
+    def _pause_game(self):
+        self.game_active = False
+        pygame.mouse.set_visible(True)
+        self.bg_music.sound.stop()
 
 if __name__ == '__main__':
     # 创建游戏实例并运行游戏

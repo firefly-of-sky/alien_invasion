@@ -19,10 +19,13 @@ class Ship(Sprite):
 
         # 在飞船的属性x中存储一个浮点数
         self.x = float(self.rect.x)
+        self.y = float(self.rect.y)
         
         # 移动标志 （飞船一开始不移动）
         self.moving_right = False
         self.moving_left = False
+        self.moving_up = False
+        self.moving_down = False
 
 
     def update(self):
@@ -32,10 +35,16 @@ class Ship(Sprite):
             self.x += self.settings.ship_speed
         if self.moving_left and self.rect.left > self.screen_rect.left:
             self.x -= self.settings.ship_speed
+        if self.settings.updown_on:
+            if self.moving_up and self.rect.top > self.screen_rect.top:
+                self.y -= self.settings.ship_speed
+            if self.moving_down and self.rect.bottom < self.screen_rect.bottom:
+                self.y += self.settings.ship_speed
 
         # 根据self.x更新rect对象
         self.rect.x = self.x
-        
+        self.rect.y = self.y
+
     def blitme(self):
         """在指定位置绘制飞船"""
         self.screen.blit(self.image, self.rect)
@@ -43,3 +52,5 @@ class Ship(Sprite):
     def center_ship(self):
         self.rect.midbottom = self.screen_rect.midbottom
         self.x = float(self.rect.x)
+        self.y = float(self.rect.y)
+        

@@ -9,6 +9,7 @@ class Settings:
 
         # 飞船的设置
         self.ship_limit = 1
+        self.updown_on = True
 
         # 子弹设置
         self.bullet_width = 3
